@@ -149,13 +149,24 @@ graph LR
         G6[GCS]
     end
 
-    WF --> P1 & P2 & P3 & P4 & P5 & P6
-    P1 --> A1 & G1
-    P2 --> A2 & G2
-    P3 --> A3 & G3
-    P4 --> A4 & G4
-    P5 --> A5 & G5
-    P6 --> A6 & G6
+    WF --> P1
+    WF --> P2
+    WF --> P3
+    WF --> P4
+    WF --> P5
+    WF --> P6
+    P1 --> A1
+    P1 --> G1
+    P2 --> A2
+    P2 --> G2
+    P3 --> A3
+    P3 --> G3
+    P4 --> A4
+    P4 --> G4
+    P5 --> A5
+    P5 --> G5
+    P6 --> A6
+    P6 --> G6
 ```
 
 Adding GCP support = write `GcpAdapterConfig.java` with `@Profile("gcp")`. No domain code changes.

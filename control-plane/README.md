@@ -44,20 +44,20 @@ The domain layer has zero AWS imports. All I/O is behind interfaces in `io.infra
 
 ```mermaid
 graph TD
-    subgraph "API Layer"
-        RC[RequestController\n/api/requests]
-        IC[InternalController\n/internal/**]
-        WC[WebhookController\n/api/webhooks/github]
-        AC[AuthController\n/auth/token]
+    subgraph API["API Layer"]
+        RC[RequestController]
+        IC[InternalController]
+        WC[WebhookController]
+        AC[AuthController]
     end
 
-    subgraph "Domain Layer"
-        IR[InfraRequest\nimmutable record]
-        RS["RequestState\nsealed interface\n7 nested records"]
-        WS["WorkflowService\n(Phase 2)"]
+    subgraph Domain["Domain Layer"]
+        IR[InfraRequest]
+        RS[RequestState sealed]
+        WS[WorkflowService Phase 2]
     end
 
-    subgraph "Ports"
+    subgraph Ports["Ports"]
         P1[StateStorePort]
         P2[MessageQueuePort]
         P3[SecretStorePort]
@@ -66,7 +66,7 @@ graph TD
         P6[ObjectStoragePort]
     end
 
-    subgraph "AWS Adapters"
+    subgraph AWS["AWS Adapters — @Profile aws or local"]
         AD1[DynamoDbStateStoreAdapter]
         AD2[SqsMessageQueueAdapter]
         AD3[AwsSecretsAdapter]
@@ -75,7 +75,7 @@ graph TD
         AD6[S3ObjectStorageAdapter]
     end
 
-    subgraph "Local/Test Adapters"
+    subgraph Local["Local Adapters — @Profile test"]
         LA1[InMemoryStateStoreAdapter]
         LA2[InMemoryMessageQueueAdapter]
         LA3[InMemorySecretStoreAdapter]
@@ -84,24 +84,29 @@ graph TD
         LA6[InMemoryObjectStorageAdapter]
     end
 
-    RC & IC & WC --> IR
+    RC --> IR
+    IC --> IR
+    WC --> IR
     IC --> P2
     WC --> P2
-    WS --> P1 & P2 & P4 & P5
+    WS --> P1
+    WS --> P2
+    WS --> P4
+    WS --> P5
 
-    P1 -->|@Profile aws,local| AD1
-    P2 -->|@Profile aws,local| AD2
-    P3 -->|@Profile aws,local| AD3
-    P4 -->|@Profile aws,local| AD4
-    P5 -->|@Profile aws,local| AD5
-    P6 -->|@Profile aws,local| AD6
+    P1 --> AD1
+    P2 --> AD2
+    P3 --> AD3
+    P4 --> AD4
+    P5 --> AD5
+    P6 --> AD6
 
-    P1 -->|@Profile test| LA1
-    P2 -->|@Profile test| LA2
-    P3 -->|@Profile test| LA3
-    P4 -->|@Profile test| LA4
-    P5 -->|@Profile test| LA5
-    P6 -->|@Profile test| LA6
+    P1 --> LA1
+    P2 --> LA2
+    P3 --> LA3
+    P4 --> LA4
+    P5 --> LA5
+    P6 --> LA6
 ```
 
 ---

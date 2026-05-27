@@ -41,7 +41,7 @@ The agent is a **stateful, multi-node graph**. The `AgentState` TypedDict is thr
 
 ```mermaid
 flowchart TD
-    START([fa:fa-play Start]) --> intake
+    START([Start]) --> intake
 
     intake["intake_node\nParse intent, score confidence\nper dimension"]
 
@@ -81,7 +81,7 @@ flowchart TD
 
     submit["submit_node\nPOST /internal/requests\n→ Control Plane\nReturns requestId"]
 
-    submit --> status_mode(["fa:fa-bell Status / notification mode\nAgent tracks requestId,\nresponds to status queries"])
+    submit --> status_mode(["Status mode\nAgent tracks requestId\nresponds to status queries"])
 ```
 
 ---

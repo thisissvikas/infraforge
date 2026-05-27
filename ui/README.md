@@ -74,9 +74,9 @@ sequenceDiagram
 
     Dev->>UI: Type message, press Enter
     UI->>UI: Add optimistic user bubble
-    UI->>Agent: POST /agent/chat\n{sessionId, message} + Bearer JWT
+    UI->>Agent: POST /agent/chat {sessionId, message} + Bearer JWT
 
-    Agent->>Agent: Run LangGraph graph\n(may take 5-15s for generation)
+    Agent->>Agent: Run LangGraph graph (5-15s for generation)
 
     alt Needs clarification
         Agent-->>UI: {message: "Are you expecting PCI data?"}
