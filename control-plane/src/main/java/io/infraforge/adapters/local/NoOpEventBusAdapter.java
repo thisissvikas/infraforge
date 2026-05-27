@@ -4,11 +4,15 @@ import io.infraforge.domain.AuditEvent;
 import io.infraforge.ports.EventBusPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 /**
  * Logs audit events to stdout instead of publishing to EventBridge.
  * Used in the local and test profiles.
  */
+@Component
+@Profile("test")
 public class NoOpEventBusAdapter implements EventBusPort {
 
     private static final Logger log = LoggerFactory.getLogger(NoOpEventBusAdapter.class);

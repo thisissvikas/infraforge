@@ -8,5 +8,6 @@ public record SubmitRequestDto(
         @NotBlank String userEmail,
         @NotBlank String teamId,
         @NotBlank String rawIntent,
-        String generatedTerraform  // may be null if the agent submits before generation
+        @NotBlank String targetCloud,      // "AWS" | "GCP" | "AZURE"
+        String generatedTerraform          // may be null if the agent submits before generation
 ) {}

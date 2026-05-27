@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.infraforge.ports.SecretStorePort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.ResourceNotFoundException;
 
@@ -18,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Secrets Manager-backed implementation of {@link SecretStorePort}.
  * Caches values for {@code CACHE_TTL} to avoid per-request API calls.
  */
+@Component
+@Profile({"aws", "local"})
 public class AwsSecretsAdapter implements SecretStorePort {
 
     private static final Logger log = LoggerFactory.getLogger(AwsSecretsAdapter.class);

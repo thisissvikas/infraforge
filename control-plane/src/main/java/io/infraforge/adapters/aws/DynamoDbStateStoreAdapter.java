@@ -2,6 +2,7 @@ package io.infraforge.adapters.aws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.infraforge.domain.CloudProvider;
 import io.infraforge.domain.InfraRequest;
 import io.infraforge.domain.RequestState;
 import io.infraforge.ports.StateStorePort;
@@ -13,11 +14,16 @@ import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Component
+@Profile({"aws", "local"})
 public class DynamoDbStateStoreAdapter implements StateStorePort {
 
     private final DynamoDbTable<DynamoDbInfraRequestEntity> table;
@@ -67,6 +73,7 @@ public class DynamoDbStateStoreAdapter implements StateStorePort {
         e.setUserId(r.userId());
         e.setUserEmail(r.userEmail());
         e.setTeamId(r.teamId());
+        e.setTargetCloud(r.targetCloud().name());
         e.setStateType(r.state().typeName());
         e.setStateMetadata(serializeStateMetadata(r.state()));
         e.setRawIntent(r.rawIntent());
@@ -86,6 +93,7 @@ public class DynamoDbStateStoreAdapter implements StateStorePort {
                 e.getUserId(),
                 e.getUserEmail(),
                 e.getTeamId(),
+                CloudProvider.fromString(e.getTargetCloud()),
                 deserializeState(e.getStateType(), e.getStateMetadata()),
                 e.getRawIntent(),
                 e.getGeneratedTerraform(),

@@ -2,6 +2,7 @@ package io.infraforge.api;
 
 import io.infraforge.auth.AuthenticatedUser;
 import io.infraforge.auth.JwtService;
+import io.infraforge.domain.CloudProvider;
 import io.infraforge.domain.InfraRequest;
 import io.infraforge.domain.User;
 import io.infraforge.ports.StateStorePort;
@@ -30,7 +31,7 @@ class RequestControllerTest {
         User user = new User("u-001", "alice", "alice@test.com");
         String token = jwtService.issue(user);
 
-        InfraRequest req = InfraRequest.create("u-001", "alice@test.com", "team-a", "S3 bucket");
+        InfraRequest req = InfraRequest.create("u-001", "alice@test.com", "team-a", "S3 bucket", CloudProvider.AWS);
         stateStore.save(req);
 
         mockMvc.perform(get("/api/requests")
@@ -51,7 +52,7 @@ class RequestControllerTest {
         User alice = new User("u-alice", "alice", "alice@test.com");
         User bob   = new User("u-bob",   "bob",   "bob@test.com");
 
-        InfraRequest alicesReq = InfraRequest.create("u-alice", "alice@test.com", "team-a", "private");
+        InfraRequest alicesReq = InfraRequest.create("u-alice", "alice@test.com", "team-a", "private", CloudProvider.AWS);
         stateStore.save(alicesReq);
 
         String bobToken = jwtService.issue(bob);

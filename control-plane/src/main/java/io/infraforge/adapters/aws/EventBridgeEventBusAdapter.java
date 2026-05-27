@@ -7,10 +7,14 @@ import io.infraforge.ports.EventBusPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.eventbridge.EventBridgeClient;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsRequest;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsRequestEntry;
 
+@Component
+@Profile({"aws", "local"})
 public class EventBridgeEventBusAdapter implements EventBusPort {
 
     private static final Logger log = LoggerFactory.getLogger(EventBridgeEventBusAdapter.class);

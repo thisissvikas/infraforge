@@ -20,6 +20,8 @@ public record InfraforgeProperties(
 
     public record Aws(
             @DefaultValue("us-east-1") String region,
+            /** When non-empty, all AWS SDK clients point here (LocalStack). Empty = real AWS. */
+            @DefaultValue("") String endpointOverride,
             DynamoDb dynamodb,
             Sqs sqs,
             S3 s3,

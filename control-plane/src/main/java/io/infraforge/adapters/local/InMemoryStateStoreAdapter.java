@@ -2,6 +2,8 @@ package io.infraforge.adapters.local;
 
 import io.infraforge.domain.InfraRequest;
 import io.infraforge.ports.StateStorePort;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
 import java.util.List;
@@ -13,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * In-memory implementation of {@link StateStorePort} for local development and tests.
  * Thread-safe via {@link ConcurrentHashMap}; not durable across restarts.
  */
+@Component
+@Profile("test")
 public class InMemoryStateStoreAdapter implements StateStorePort {
 
     private final Map<String, InfraRequest> store = new ConcurrentHashMap<>();

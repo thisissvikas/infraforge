@@ -1,6 +1,8 @@
 package io.infraforge.adapters.local;
 
 import io.infraforge.ports.ObjectStoragePort;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,6 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * In-memory object store for local development and tests.
  * Keys are scoped as {@code bucket/key} internally.
  */
+@Component
+@Profile("test")
 public class InMemoryObjectStorageAdapter implements ObjectStoragePort {
 
     private final Map<String, byte[]> store = new ConcurrentHashMap<>();

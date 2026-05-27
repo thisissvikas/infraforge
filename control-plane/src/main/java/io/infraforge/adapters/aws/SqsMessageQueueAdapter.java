@@ -6,6 +6,8 @@ import io.infraforge.domain.WorkflowEvent;
 import io.infraforge.ports.MessageQueuePort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
 import software.amazon.awssdk.services.sqs.model.Message;
@@ -23,6 +25,8 @@ import java.util.function.Consumer;
  * Uses virtual threads (Java 21+) for the polling loop so that blocking I/O
  * does not consume platform threads.
  */
+@Component
+@Profile({"aws", "local"})
 public class SqsMessageQueueAdapter implements MessageQueuePort, AutoCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(SqsMessageQueueAdapter.class);

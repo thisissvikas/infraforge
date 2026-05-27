@@ -97,6 +97,32 @@ Checkbox-based tracker. Update as each item is completed.
 
 ---
 
+## Phase 1.5 — Simplification & Multi-Cloud Target Support ✅
+
+> Goal: simplify the ports & adapters wiring; add `targetCloud` so the agent can generate Terraform for AWS, GCP, or Azure.
+
+- [x] Deleted `AwsAdapterConfig.java` and `LocalAdapterConfig.java` — wiring config files are gone
+- [x] `@Component @Profile({"aws","local"})` on all 6 AWS adapters (self-registering)
+- [x] `@Component @Profile("test")` on all 6 local adapters; `InMemorySecretStoreAdapter` seeds JWT secret via `@PostConstruct`
+- [x] `AwsClientConfig` simplified: 12 profile-split bean methods → 6 single beans controlled by `infraforge.aws.endpoint-override`
+- [x] `InfraforgeProperties.Aws` — added `endpointOverride` field (`@DefaultValue("")`)
+- [x] `application-local.yml` — added `endpoint-override: http://localhost:4566`
+- [x] `domain/CloudProvider.java` — `enum CloudProvider { AWS, GCP, AZURE }` with `fromString()`
+- [x] `domain/InfraRequest.java` — added `targetCloud: CloudProvider` field; updated `create()` and all transition helpers
+- [x] `adapters/aws/DynamoDbInfraRequestEntity.java` — added `targetCloud` String field
+- [x] `adapters/aws/DynamoDbStateStoreAdapter.java` — maps `targetCloud` in `toEntity()` / `toDomain()`
+- [x] `api/dto/SubmitRequestDto.java` — added `@NotBlank String targetCloud`
+- [x] `api/dto/InfraRequestDto.java` — added `String targetCloud`
+- [x] `api/InternalController.java` — parses `CloudProvider.fromString(body.targetCloud())`
+- [x] Tests updated (`InMemoryStateStoreAdapterTest`, `RequestControllerTest`) to pass `CloudProvider.AWS`
+- [x] `agent/agent/graph/state.py` — added `target_cloud: str` to `AgentState`
+- [x] `infra-modules/` created with provider-scoped structure:
+  - `aws/` — ecs-service, rds-postgres, vpc, s3-bucket, api-gateway (stub `main.tf` + `variables.tf`)
+  - `gcp/` — cloud-run, cloud-sql, vpc (stubs)
+  - `azure/` — container-app, azure-sql (stubs)
+
+---
+
 ## Phase 2 — Control Plane: Workflow Engine ⬜
 
 > Goal: SQS consumer driving the state machine, GitHub PR automation, email notifications on state changes, audit events on every transition.

@@ -1,5 +1,6 @@
 package io.infraforge.adapters.local;
 
+import io.infraforge.domain.CloudProvider;
 import io.infraforge.domain.InfraRequest;
 import io.infraforge.domain.RequestState;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ class InMemoryStateStoreAdapterTest {
 
     @Test
     void saveAndFindById() {
-        InfraRequest req = InfraRequest.create("user1", "user1@test.com", "team-a", "I need an S3 bucket");
+        InfraRequest req = InfraRequest.create("user1", "user1@test.com", "team-a", "I need an S3 bucket", CloudProvider.AWS);
         store.save(req);
 
         assertThat(store.findById(req.requestId()))
@@ -27,9 +28,9 @@ class InMemoryStateStoreAdapterTest {
 
     @Test
     void findByUserId_returnsSortedByCreatedAtDesc() throws InterruptedException {
-        InfraRequest r1 = InfraRequest.create("user2", "u@t.com", "team-b", "first");
+        InfraRequest r1 = InfraRequest.create("user2", "u@t.com", "team-b", "first", CloudProvider.AWS);
         Thread.sleep(5); // ensure different timestamps
-        InfraRequest r2 = InfraRequest.create("user2", "u@t.com", "team-b", "second");
+        InfraRequest r2 = InfraRequest.create("user2", "u@t.com", "team-b", "second", CloudProvider.AWS);
 
         store.save(r1);
         store.save(r2);
@@ -41,7 +42,7 @@ class InMemoryStateStoreAdapterTest {
 
     @Test
     void transitionState() {
-        InfraRequest req = InfraRequest.create("user3", "u@t.com", "team-c", "ECS service");
+        InfraRequest req = InfraRequest.create("user3", "u@t.com", "team-c", "ECS service", CloudProvider.AWS);
         store.save(req);
 
         InfraRequest updated = store.transition(req.requestId(),
@@ -53,7 +54,7 @@ class InMemoryStateStoreAdapterTest {
 
     @Test
     void save_throwsOnDuplicateRequestId() {
-        InfraRequest req = InfraRequest.create("user4", "u@t.com", "team-d", "duplicate");
+        InfraRequest req = InfraRequest.create("user4", "u@t.com", "team-d", "duplicate", CloudProvider.AWS);
         store.save(req);
 
         assertThatThrownBy(() -> store.save(req))

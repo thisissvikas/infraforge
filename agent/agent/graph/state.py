@@ -23,6 +23,7 @@ class AgentState(TypedDict):
     parsed_intent: dict[str, Any]      # structured extraction of what the user wants
     intent_confidence: float           # 0.0–1.0; < 0.7 triggers clarification loop
     clarification_needed: list[str]    # list of dimensions still underspecified
+    target_cloud: str                  # "AWS" | "GCP" | "AZURE" — where the infra will live
 
     # ── Policy context (populated by context_fetch_node) ─────────────────────
     retrieved_policies: list[str]      # chunks from Bedrock KB

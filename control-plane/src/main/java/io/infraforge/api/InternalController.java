@@ -2,6 +2,7 @@ package io.infraforge.api;
 
 import io.infraforge.api.dto.InfraRequestDto;
 import io.infraforge.api.dto.SubmitRequestDto;
+import io.infraforge.domain.CloudProvider;
 import io.infraforge.domain.InfraRequest;
 import io.infraforge.domain.WorkflowEvent;
 import io.infraforge.ports.MessageQueuePort;
@@ -57,7 +58,8 @@ public class InternalController {
             @RequestBody @Valid SubmitRequestDto body) {
 
         InfraRequest request = InfraRequest.create(
-                body.userId(), body.userEmail(), body.teamId(), body.rawIntent());
+                body.userId(), body.userEmail(), body.teamId(), body.rawIntent(),
+                CloudProvider.fromString(body.targetCloud()));
 
         if (body.generatedTerraform() != null) {
             request = request.withTerraform(body.generatedTerraform());

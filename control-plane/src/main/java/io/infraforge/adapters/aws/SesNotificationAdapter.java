@@ -5,6 +5,8 @@ import io.infraforge.ports.NotificationPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.sesv2.SesV2Client;
 import software.amazon.awssdk.services.sesv2.model.Body;
 import software.amazon.awssdk.services.sesv2.model.Content;
@@ -13,6 +15,8 @@ import software.amazon.awssdk.services.sesv2.model.EmailContent;
 import software.amazon.awssdk.services.sesv2.model.Message;
 import software.amazon.awssdk.services.sesv2.model.SendEmailRequest;
 
+@Component
+@Profile({"aws", "local"})
 public class SesNotificationAdapter implements NotificationPort {
 
     private static final Logger log = LoggerFactory.getLogger(SesNotificationAdapter.class);

@@ -3,7 +3,10 @@ package io.infraforge.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -16,14 +19,19 @@ import software.amazon.awssdk.services.sqs.SqsClient;
 import java.net.URI;
 
 /**
- * Instantiates AWS SDK v2 clients.
+ * Instantiates AWS SDK v2 clients for the {@code aws} and {@code local} profiles.
  *
- * <p>The {@code aws} profile creates standard production clients using the
- * {@link DefaultCredentialsProvider} chain (IAM role → env vars → profile).
- * The {@code local} profile uses LocalStack via {@code AWS_ENDPOINT_URL}
- * (overridden in application-local.yml).</p>
+ * <p>A single bean per client covers both cases:
+ * <ul>
+ *   <li>When {@code infraforge.aws.endpoint-override} is non-empty (local profile), all
+ *       clients point to LocalStack and use static {@code test/test} credentials.</li>
+ *   <li>When empty (aws profile), clients use {@link DefaultCredentialsProvider} (IAM role
+ *       → env vars → profile) and the configured region.</li>
+ * </ul>
+ * </p>
  */
 @Configuration
+@Profile({"aws", "local"})
 public class AwsClientConfig {
 
     private final InfraforgeProperties props;
@@ -32,24 +40,33 @@ public class AwsClientConfig {
         this.props = props;
     }
 
-    @Bean
-    @Profile("aws")
-    public DynamoDbClient dynamoDbClientAws() {
-        return DynamoDbClient.builder()
-                .region(Region.of(props.aws().region()))
-                .credentialsProvider(DefaultCredentialsProvider.create())
-                .build();
+    // ── Shared helpers ────────────────────────────────────────────────────────
+
+    private boolean isLocalStack() {
+        return props.aws().endpointOverride() != null && !props.aws().endpointOverride().isBlank();
     }
 
+    private URI endpointUri() {
+        return URI.create(props.aws().endpointOverride());
+    }
+
+    private Region region() {
+        return isLocalStack() ? Region.US_EAST_1 : Region.of(props.aws().region());
+    }
+
+    private AwsCredentialsProvider credentials() {
+        return isLocalStack()
+                ? StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test"))
+                : DefaultCredentialsProvider.create();
+    }
+
+    // ── Clients ───────────────────────────────────────────────────────────────
+
     @Bean
-    @Profile("local")
-    public DynamoDbClient dynamoDbClientLocal() {
-        return DynamoDbClient.builder()
-                .endpointOverride(URI.create("http://localhost:4566"))
-                .region(Region.US_EAST_1)
-                .credentialsProvider(() -> software.amazon.awssdk.auth.credentials
-                        .AwsBasicCredentials.create("test", "test"))
-                .build();
+    public DynamoDbClient dynamoDbClient() {
+        var builder = DynamoDbClient.builder().region(region()).credentialsProvider(credentials());
+        if (isLocalStack()) builder.endpointOverride(endpointUri());
+        return builder.build();
     }
 
     @Bean
@@ -58,103 +75,39 @@ public class AwsClientConfig {
     }
 
     @Bean
-    @Profile("aws")
-    public SqsClient sqsClientAws() {
-        return SqsClient.builder()
-                .region(Region.of(props.aws().region()))
-                .credentialsProvider(DefaultCredentialsProvider.create())
-                .build();
+    public SqsClient sqsClient() {
+        var builder = SqsClient.builder().region(region()).credentialsProvider(credentials());
+        if (isLocalStack()) builder.endpointOverride(endpointUri());
+        return builder.build();
     }
 
     @Bean
-    @Profile("local")
-    public SqsClient sqsClientLocal() {
-        return SqsClient.builder()
-                .endpointOverride(URI.create("http://localhost:4566"))
-                .region(Region.US_EAST_1)
-                .credentialsProvider(() -> software.amazon.awssdk.auth.credentials
-                        .AwsBasicCredentials.create("test", "test"))
-                .build();
+    public SesV2Client sesV2Client() {
+        var builder = SesV2Client.builder().region(region()).credentialsProvider(credentials());
+        if (isLocalStack()) builder.endpointOverride(endpointUri());
+        return builder.build();
     }
 
     @Bean
-    @Profile("aws")
-    public SesV2Client sesClientAws() {
-        return SesV2Client.builder()
-                .region(Region.of(props.aws().region()))
-                .credentialsProvider(DefaultCredentialsProvider.create())
-                .build();
+    public S3Client s3Client() {
+        var builder = S3Client.builder().region(region()).credentialsProvider(credentials());
+        if (isLocalStack()) {
+            builder.endpointOverride(endpointUri()).forcePathStyle(true);
+        }
+        return builder.build();
     }
 
     @Bean
-    @Profile("local")
-    public SesV2Client sesClientLocal() {
-        return SesV2Client.builder()
-                .endpointOverride(URI.create("http://localhost:4566"))
-                .region(Region.US_EAST_1)
-                .credentialsProvider(() -> software.amazon.awssdk.auth.credentials
-                        .AwsBasicCredentials.create("test", "test"))
-                .build();
+    public EventBridgeClient eventBridgeClient() {
+        var builder = EventBridgeClient.builder().region(region()).credentialsProvider(credentials());
+        if (isLocalStack()) builder.endpointOverride(endpointUri());
+        return builder.build();
     }
 
     @Bean
-    @Profile("aws")
-    public S3Client s3ClientAws() {
-        return S3Client.builder()
-                .region(Region.of(props.aws().region()))
-                .credentialsProvider(DefaultCredentialsProvider.create())
-                .build();
-    }
-
-    @Bean
-    @Profile("local")
-    public S3Client s3ClientLocal() {
-        return S3Client.builder()
-                .endpointOverride(URI.create("http://localhost:4566"))
-                .forcePathStyle(true)
-                .region(Region.US_EAST_1)
-                .credentialsProvider(() -> software.amazon.awssdk.auth.credentials
-                        .AwsBasicCredentials.create("test", "test"))
-                .build();
-    }
-
-    @Bean
-    @Profile("aws")
-    public EventBridgeClient eventBridgeClientAws() {
-        return EventBridgeClient.builder()
-                .region(Region.of(props.aws().region()))
-                .credentialsProvider(DefaultCredentialsProvider.create())
-                .build();
-    }
-
-    @Bean
-    @Profile("local")
-    public EventBridgeClient eventBridgeClientLocal() {
-        return EventBridgeClient.builder()
-                .endpointOverride(URI.create("http://localhost:4566"))
-                .region(Region.US_EAST_1)
-                .credentialsProvider(() -> software.amazon.awssdk.auth.credentials
-                        .AwsBasicCredentials.create("test", "test"))
-                .build();
-    }
-
-    @Bean
-    @Profile("aws")
-    public SecretsManagerClient secretsManagerClientAws() {
-        return SecretsManagerClient.builder()
-                .region(Region.of(props.aws().region()))
-                .credentialsProvider(DefaultCredentialsProvider.create())
-                .build();
-    }
-
-    @Bean
-    @Profile("local")
-    public SecretsManagerClient secretsManagerClientLocal() {
-        return SecretsManagerClient.builder()
-                .endpointOverride(URI.create("http://localhost:4566"))
-                .region(Region.US_EAST_1)
-                .credentialsProvider(() -> software.amazon.awssdk.auth.credentials
-                        .AwsBasicCredentials.create("test", "test"))
-                .build();
+    public SecretsManagerClient secretsManagerClient() {
+        var builder = SecretsManagerClient.builder().region(region()).credentialsProvider(credentials());
+        if (isLocalStack()) builder.endpointOverride(endpointUri());
+        return builder.build();
     }
 }

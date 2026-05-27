@@ -26,6 +26,7 @@ public class DynamoDbInfraRequestEntity {
     private String userId;
     private String userEmail;
     private String teamId;
+    private String targetCloud;        // CloudProvider name e.g. "AWS", "GCP", "AZURE"
     private String stateType;
     private String stateMetadata;    // JSON; shape depends on stateType
     private String rawIntent;
@@ -54,6 +55,9 @@ public class DynamoDbInfraRequestEntity {
 
     public String getTeamId()                     { return teamId; }
     public void   setTeamId(String v)             { this.teamId = v; }
+
+    public String getTargetCloud()                { return targetCloud; }
+    public void   setTargetCloud(String v)        { this.targetCloud = v; }
 
     public String getStateType()                  { return stateType; }
     public void   setStateType(String v)          { this.stateType = v; }

@@ -9,6 +9,7 @@ infraforge:
   ui-base-url: http://localhost:3000
   aws:
     region: us-east-1
+    endpoint-override: http://localhost:4566
     dynamodb:
       table-name: infraforge-requests
     sqs:
