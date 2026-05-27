@@ -1,0 +1,39 @@
+[versions]
+spring-boot                 = "3.5.0"
+spring-dependency-management = "1.1.7"
+aws-sdk                     = "2.29.0"
+jjwt                        = "0.12.6"
+spring-statemachine         = "4.0.0"
+
+[libraries]
+# Spring Boot starters
+spring-boot-web             = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-security        = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-boot-oauth2-client   = { module = "org.springframework.boot:spring-boot-starter-oauth2-client" }
+spring-boot-validation      = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-actuator        = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-test            = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-security-test        = { module = "org.springframework.security:spring-security-test" }
+
+# JWT (JJWT 0.12.x)
+jjwt-api                    = { module = "io.jsonwebtoken:jjwt-api",     version.ref = "jjwt" }
+jjwt-impl                   = { module = "io.jsonwebtoken:jjwt-impl",    version.ref = "jjwt" }
+jjwt-jackson                = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+
+# AWS SDK v2 (BOM-managed)
+aws-sdk-bom                 = { module = "software.amazon.awssdk:bom",                version.ref = "aws-sdk" }
+aws-dynamodb-enhanced       = { module = "software.amazon.awssdk:dynamodb-enhanced" }
+aws-sqs                     = { module = "software.amazon.awssdk:sqs" }
+aws-sesv2                   = { module = "software.amazon.awssdk:sesv2" }
+aws-s3                      = { module = "software.amazon.awssdk:s3" }
+aws-eventbridge             = { module = "software.amazon.awssdk:eventbridge" }
+aws-secretsmanager          = { module = "software.amazon.awssdk:secretsmanager" }
+aws-sts                     = { module = "software.amazon.awssdk:sts" }
+
+# Spring Statemachine (Phase 2 — declared early so dependency is pinned)
+spring-statemachine-core    = { module = "org.springframework.statemachine:spring-statemachine-core",
+                                version.ref = "spring-statemachine" }
+
+[plugins]
+spring-boot                 = { id = "org.springframework.boot",          version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management",  version.ref = "spring-dependency-management" }

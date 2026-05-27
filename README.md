@@ -274,7 +274,7 @@ The Control Plane owns all of this. It persists every state transition to Dynamo
 ### Control Plane
 | Component | Technology |
 |---|---|
-| Language & Framework | Java 21 / Spring Boot 3 |
+| Language & Framework | Java 25 / Spring Boot 3.5 |
 | Workflow State Machine | Spring Statemachine |
 | Persistence | AWS DynamoDB |
 | GitHub Integration | GitHub REST API |
@@ -330,7 +330,18 @@ infraforge/
 │   │       ├── github/           # PR service
 │   │       ├── aws/              # DynamoDB, SQS, SSM clients
 │   │       └── audit/            # Event publishing
-│   └── pom.xml
+│   └── build.gradle.kts
+│
+├── ui/                              # Next.js 15 + React 19 (developer chat + history)
+│   ├── app/
+│   │   ├── (auth)/                  # GitHub OAuth pages
+│   │   ├── chat/                    # Developer chat interface
+│   │   └── requests/                # Request history + status
+│   ├── components/
+│   ├── lib/
+│   │   ├── api/                     # Typed API clients
+│   │   └── auth/                    # Auth.js v5 (GitHub provider)
+│   └── package.json
 │
 ├── infra-modules/                # Platform-approved Terraform modules
 │   ├── ecs-service/
@@ -339,11 +350,15 @@ infraforge/
 │   ├── s3-bucket/
 │   └── vpc/
 │
-├── policies/                     # Org policy documents (RAG knowledge base)
-│   ├── security-baseline.md
-│   ├── networking-standards.md
-│   ├── tagging-requirements.md
-│   └── approved-regions.md
+├── policies/
+│   ├── rego/                        # OPA rules (CI enforcement + agent validate_node)
+│   │   ├── networking.rego
+│   │   ├── security_baseline.rego
+│   │   └── cost_controls.rego
+│   └── docs/                        # Human-readable docs → Bedrock KB source
+│       ├── security-baseline.md
+│       ├── networking-standards.md
+│       └── tagging-requirements.md
 │
 ├── .github/
 │   └── workflows/

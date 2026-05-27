@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: infraforge-control-plane
+
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id:     ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope:         read:user,user:email
+        provider:
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri:         https://github.com/login/oauth/access_token
+            user-info-uri:     https://api.github.com/user
+            user-name-attribute: login
+
+  # Virtual threads — Java 21+; saturates CPU-bound work on virtual threads too.
+  threads:
+    virtual:
+      enabled: true
+
+infraforge:
+  jwt:
+    secret:        ${INFRAFORGE_JWT_SECRET:change-me-min-32-chars-for-hmac256}
+    expiration-ms: ${INFRAFORGE_JWT_EXPIRY_MS:86400000}
+  service-key:     ${INFRAFORGE_SERVICE_KEY}
+  ui-base-url:     ${INFRAFORGE_UI_BASE_URL:http://localhost:3000}
+  github:
+    app-installation-token: ${GITHUB_APP_TOKEN:}
+    org:                    ${GITHUB_ORG:}
+    infra-repo:             ${GITHUB_INFRA_REPO:infra}
+    webhook-secret:         ${GITHUB_WEBHOOK_SECRET:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+server:
+  port: 8080
+  # Tomcat will use virtual threads for request handling when
+  # spring.threads.virtual.enabled=true is set above.

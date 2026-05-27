@@ -1,0 +1,75 @@
+repos:
+  # General
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+
+  # Java / Kotlin (Gradle)
+  - repo: local
+    hooks:
+      - id: gradle-spotless
+        name: Spotless (Java formatting)
+        language: system
+        entry: ./control-plane/gradlew -p control-plane spotlessCheck
+        pass_filenames: false
+        files: ^control-plane/.*\.java$
+
+  # Python (agent)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^agent/
+      - id: ruff-format
+        files: ^agent/
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        files: ^agent/
+        args: [--config-file=agent/pyproject.toml]
+        additional_dependencies:
+          - types-requests
+
+  # Terraform
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.96.0
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_validate
+        files: ^infra-modules/
+
+  # OPA / Rego
+  - repo: https://github.com/anderseknert/pre-commit-opa
+    rev: v1.7.0
+    hooks:
+      - id: opa-fmt
+        files: ^policies/rego/.*\.rego$
+      - id: opa-check
+        files: ^policies/rego/.*\.rego$
+
+  # TypeScript / Next.js (ui)
+  - repo: local
+    hooks:
+      - id: eslint-ui
+        name: ESLint (UI)
+        language: system
+        entry: bash -c "cd ui && npx eslint --max-warnings 0"
+        pass_filenames: false
+        files: ^ui/.*\.(ts|tsx)$
+      - id: tsc-ui
+        name: TypeScript check (UI)
+        language: system
+        entry: bash -c "cd ui && npx tsc --noEmit"
+        pass_filenames: false
+        files: ^ui/.*\.(ts|tsx)$

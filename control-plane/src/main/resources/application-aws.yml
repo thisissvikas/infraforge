@@ -1,0 +1,13 @@
+infraforge:
+  aws:
+    region:          ${AWS_REGION:us-east-1}
+    dynamodb:
+      table-name:    ${DYNAMODB_TABLE:infraforge-requests}
+    sqs:
+      workflow-queue-url: ${SQS_WORKFLOW_QUEUE_URL}
+    s3:
+      terraform-bucket: ${S3_TERRAFORM_BUCKET}
+    ses:
+      from-email:    ${SES_FROM_EMAIL:noreply@infraforge.io}
+    eventbridge:
+      event-bus-name: ${EVENTBRIDGE_BUS_NAME:infraforge-audit}

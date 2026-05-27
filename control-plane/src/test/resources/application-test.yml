@@ -1,0 +1,33 @@
+# Test profile: in-memory adapters only — no AWS, no LocalStack required.
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: test-client-id
+            client-secret: test-client-secret
+
+infraforge:
+  jwt:
+    secret: test-secret-key-min-32-chars-for-hmac256
+    expiration-ms: 3600000
+  service-key: test-service-key
+  ui-base-url: http://localhost:3000
+  github:
+    app-installation-token: ""
+    org: ""
+    infra-repo: infra
+    webhook-secret: test-webhook-secret
+  aws:
+    region: us-east-1
+    dynamodb:
+      table-name: infraforge-requests
+    sqs:
+      workflow-queue-url: http://localhost:4566/000000000000/test-queue
+    s3:
+      terraform-bucket: test-bucket
+    ses:
+      from-email: test@test.com
+    eventbridge:
+      event-bus-name: test-bus

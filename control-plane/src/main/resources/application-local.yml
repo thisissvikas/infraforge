@@ -1,0 +1,21 @@
+# Local profile: uses AWS adapters pointed at LocalStack (docker-compose.yml).
+# Run: docker compose up localstack opa
+# Then: ./gradlew bootRun --args='--spring.profiles.active=local'
+
+infraforge:
+  jwt:
+    secret: local-dev-secret-key-min-32-chars-for-hmac256
+  service-key: local-service-key
+  ui-base-url: http://localhost:3000
+  aws:
+    region: us-east-1
+    dynamodb:
+      table-name: infraforge-requests
+    sqs:
+      workflow-queue-url: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/infraforge-workflow
+    s3:
+      terraform-bucket: infraforge-terraform-local
+    ses:
+      from-email: dev@localhost
+    eventbridge:
+      event-bus-name: infraforge-audit
