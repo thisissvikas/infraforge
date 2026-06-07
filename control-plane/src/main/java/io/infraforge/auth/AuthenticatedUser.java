@@ -25,7 +25,7 @@ public final class AuthenticatedUser implements Authentication {
     public String email()   { return user.email(); }
     public String login()   { return user.login(); }
 
-    @Override public Object getPrincipal()                          { return user; }
+    @Override public Object getPrincipal()                          { return this; }
     @Override public String getName()                               { return user.userId(); }
     @Override public Collection<? extends GrantedAuthority> getAuthorities() { return List.of(); }
     @Override public Object getCredentials()                        { return null; }

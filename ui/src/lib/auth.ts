@@ -48,9 +48,7 @@ declare module "next-auth" {
   interface Session {
     cpToken?: string;
   }
-}
 
-declare module "next-auth/jwt" {
   interface JWT {
     cpToken?: string;
     cpTokenExpiresAt?: number;

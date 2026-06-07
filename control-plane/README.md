@@ -247,9 +247,7 @@ src/main/java/io/infraforge/
 │   ├── aws/           # AWS SDK v2 implementations
 │   └── local/         # In-memory implementations (dev/test)
 ├── config/            # Spring @Configuration classes
-│   ├── AwsClientConfig.java     # SDK clients (profile-split)
-│   ├── AwsAdapterConfig.java    # Wires AWS adapters (@Profile aws,local)
-│   ├── LocalAdapterConfig.java  # Wires local adapters (@Profile test)
+│   ├── AwsClientConfig.java     # SDK clients (single beans, LocalStack via endpoint-override)
 │   ├── SecurityConfig.java      # 3 filter chains
 │   └── InfraforgeProperties.java
 ├── auth/              # JWT, OAuth, security filters

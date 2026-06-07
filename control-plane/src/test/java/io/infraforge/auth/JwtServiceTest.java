@@ -13,7 +13,7 @@ class JwtServiceTest {
     private final JwtService jwtService = new JwtService(new InfraforgeProperties(
             new InfraforgeProperties.Jwt("test-secret-key-min-32-chars-for-hmac256", 3600000L),
             "test-service-key",
-            new InfraforgeProperties.Aws("us-east-1",
+            new InfraforgeProperties.Aws("us-east-1", "",
                     new InfraforgeProperties.Aws.DynamoDb("test-table"),
                     new InfraforgeProperties.Aws.Sqs(""),
                     new InfraforgeProperties.Aws.S3("test-bucket"),

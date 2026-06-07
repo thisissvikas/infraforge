@@ -123,67 +123,88 @@ Checkbox-based tracker. Update as each item is completed.
 
 ---
 
-## Phase 2 — Control Plane: Workflow Engine ⬜
+## Phase 2 — Control Plane: Workflow Engine ✅
 
-> Goal: SQS consumer driving the state machine, GitHub PR automation, email notifications on state changes, audit events on every transition.
+> Goal: SQS consumer driving the state machine, GitHub PR automation (stub), email notifications on state changes, audit events on every transition.
 
-- [ ] `WorkflowService` — SQS consumer subscribing at startup, dispatching to handlers
-- [ ] `RequestLifecycleOrchestrator` — handles `REQUEST_SUBMITTED` → creates GitHub PR
-- [ ] `GitHubPrService` — create branch, commit Terraform files from S3, open PR
-- [ ] `CiMonitorService` — handles `PLAN_COMPLETED` / `APPLY_COMPLETED` / `APPLY_FAILED` webhook events
-- [ ] `ApprovalRouter` — auto-approve low-risk requests, queue high-risk for platform review
-- [ ] `AuditService` — publishes `AuditEvent` to EventBridge on every state transition
-- [ ] `NotificationService` — sends SES email on `PR_CREATED`, `PLAN_APPROVED`, `DEPLOYED`, `FAILED`
-- [ ] Spring Statemachine configuration (replace manual switch in workflow handlers)
-- [ ] Integration tests against LocalStack (full SUBMITTED → DEPLOYED flow)
-
----
-
-## Phase 3 — Chat Agent ⬜
-
-> Goal: Full LangGraph graph with all 8 nodes, Bedrock RAG, tfsec/checkov, OPA, Cost Explorer, FastAPI endpoint.
-
-- [ ] `graph.py` — graph topology, conditional edges, retry limits
-- [ ] `intake_node` — intent parsing, confidence scoring, clarification question generation
-- [ ] `context_fetch_node` — Bedrock KB retrieval, `GET /internal/policies`, `GET /internal/budget`
-- [ ] `generate_node` — Terraform assembly from approved modules, LLM grounded in policy context
-- [ ] `validate_node` — tfsec subprocess, checkov subprocess, `POST /internal/validate` (OPA)
-- [ ] `refine_node` — LLM-driven fix loop (max 3 attempts)
-- [ ] `cost_estimate_node` — Cost Explorer API, budget comparison
-- [ ] `confirm_node` — human-in-the-loop, waits for developer approval
-- [ ] `submit_node` — `POST /internal/requests`, returns `requestId`
-- [ ] `BedrockKnowledgeBaseAdapter` — implements `PolicyStorePort`
-- [ ] `control_plane.py` tool — async httpx client for all 5 internal endpoints
-- [ ] `terraform_lint.py` tool — tfsec + checkov subprocess wrappers
-- [ ] `cost_explorer.py` tool — boto3 Cost Explorer client
-- [ ] `api/main.py` — FastAPI app with `POST /chat`, session management
-- [ ] Prompt templates for each node (`prompts/`)
-- [ ] Unit tests for each node (mock LLM + tool calls)
-- [ ] Integration test: full conversation → submit → `requestId` returned
+- [x] `WorkflowService` — SQS/in-memory consumer (`@PostConstruct`), dispatches all 5 event types
+- [x] `RequestLifecycleOrchestrator` — handles `REQUEST_SUBMITTED` → stub PR creation → `PR_CREATED`
+- [x] `GitHubPrPort` + `StubGitHubPrAdapter` — stub PR adapter (`@Profile aws,local,test`); real adapter in Phase 5
+- [x] `CiMonitorService` — handles `PLAN_COMPLETED` / `APPLY_COMPLETED` / `APPLY_FAILED` webhook events
+- [x] `AuditService` — publishes `AuditEvent` to EventBridge on every state transition (fire-and-forget)
+- [x] `NotificationService` — sends SES email on `PR_CREATED`, `PLAN_APPROVED`, `DEPLOYED`, `FAILED`
+- [x] `WorkflowServiceTest`, `RequestLifecycleOrchestratorTest`, `CiMonitorServiceTest`, `NotificationServiceTest`
+- [ ] `ApprovalRouter` — auto-approve low-risk requests (deferred to Phase 5 — needs real cost data)
+- [ ] Spring Statemachine configuration (deferred to Phase 5 — replace manual switch)
+- [ ] Integration tests against LocalStack (deferred to Phase 6)
 
 ---
 
-## Phase 4 — UI: Chat + History ⬜
+## Phase 3 — Chat Agent ✅
+
+> Goal: Full LangGraph graph with all 8 nodes, stub LLM + adapters, tfsec/checkov wrappers, FastAPI endpoint.
+
+- [x] `config.py` — `pydantic_settings.BaseSettings` with `USE_FAKE_LLM`, service key, CP URL
+- [x] `llm.py` — LLM factory: `GenericFakeChatModel` (local) or `ChatBedrock` (Phase 5)
+- [x] `graph.py` — full graph topology, conditional edges, `MemorySaver` checkpointer, `interrupt_before=["confirm"]`
+- [x] `intake_node` — intent parsing, confidence scoring, clarification routing
+- [x] `context_fetch_node` — concurrent `get_policies` + `get_budget` via asyncio.gather
+- [x] `generate_node` — Terraform generation, HCL block parsing
+- [x] `validate_node` — tfsec + checkov subprocesses + OPA via `/internal/validate`
+- [x] `refine_node` — LLM-driven fix loop (max 3 attempts)
+- [x] `cost_estimate_node` — stub returns 0.0 (Phase 5: real Cost Explorer)
+- [x] `confirm_node` — human-in-the-loop summary, LangGraph interrupt
+- [x] `submit_node` — `POST /internal/requests`, sets `request_id`
+- [x] `StubPolicyStoreAdapter` — hardcoded policies + 4 approved modules (Phase 5: BedrockKbAdapter)
+- [x] `control_plane.py` tool — async httpx client for all 5 internal endpoints
+- [x] `terraform_lint.py` tool — tfsec + checkov subprocesses (graceful skip if not installed)
+- [x] `cost_explorer.py` tool — stub 0.0 (Phase 5: boto3 Cost Explorer)
+- [x] `api/main.py` — FastAPI `POST /chat` + `GET /health`, in-memory session management
+- [x] Prompt templates: `intake_prompt.py`, `generate_prompt.py`, `refine_prompt.py`
+- [x] Tests: `test_intake_node.py`, `test_submit_node.py`, `test_api.py` (5 tests, all pass)
+- [ ] `BedrockKnowledgeBaseAdapter` — deferred to Phase 5
+- [ ] `cost_explorer.py` real implementation — deferred to Phase 5
+
+---
+
+## Phase 4 — UI: Chat + History ✅
 
 > Goal: Working developer portal — chat interface with live status cards, request history with timeline.
 
-- [ ] `providers.tsx` — TanStack Query `QueryClientProvider`, session provider
-- [ ] Root layout updated with providers + font
-- [ ] `chat/[sessionId]/page.tsx` — chat page shell, session ID from URL
-- [ ] `ChatInput.tsx` — textarea with submit on Enter, loading state
-- [ ] `MessageBubble.tsx` — user + assistant bubbles, markdown rendering (react-markdown)
-- [ ] `StatusCard.tsx` — embedded request status in chat (state badge, PR link, cost)
-- [ ] `useChatSession` hook — manages message list, calls `sendChatMessage()`, handles `requestId`
-- [ ] `useRequestStatus` hook — TanStack Query poll (10s interval, stops when DEPLOYED/FAILED)
-- [ ] `requests/page.tsx` — request history list (Server Component)
-- [ ] `RequestList.tsx` — table with state badge, intent summary, cost, timestamps
-- [ ] `requests/[requestId]/page.tsx` — request detail page
-- [ ] `RequestTimeline.tsx` — state machine history with timestamps + links
-- [ ] UI end-to-end test: login → chat → see status update
+- [x] `providers.tsx` — TanStack Query `QueryClientProvider` + NextAuth `SessionProvider`
+- [x] Root layout updated with `<Providers>` wrapper
+- [x] `page.tsx` updated to redirect to `/chat/<uuid>` (bookmarkable sessions)
+- [x] `chat/[sessionId]/page.tsx` — chat page with auto-scroll, empty state prompt
+- [x] `ChatInput.tsx` — textarea, Enter submits, Shift+Enter newline, disabled while loading
+- [x] `MessageBubble.tsx` — role-based alignment, `react-markdown` for assistant content
+- [x] `StatusCard.tsx` — live state badge, PR link, cost via `useRequestStatus`
+- [x] `useChatSession` hook — message list, loading state, `requestId` tracking
+- [x] `useRequestStatus` hook — TanStack Query, 10s poll, stops at DEPLOYED/FAILED
+- [x] `requests/page.tsx` — Server Component, fetches all requests
+- [x] `RequestList.tsx` — colour-coded state badges, truncated intent, cost, date
+- [x] `requests/[requestId]/page.tsx` — Server Component, request detail
+- [x] `RequestTimeline.tsx` — vertical stepper, live polling when in-flight
+- [ ] UI end-to-end test: login → chat → see status update (deferred to Phase 6)
 
 ---
 
-## Phase 5 — Infrastructure & CI/CD ⬜
+## Phase 5 — Real External Dependencies ⬜
+
+> Goal: Replace all stubs from Phases 2–4 with production implementations. No new features — existing flows just become real.
+
+- [ ] `GitHubRestApiAdapter` — GitHub REST API: create branch, commit Terraform files from S3, open PR (`@Profile("aws")`)
+- [ ] `BedrockKbAdapter` — Bedrock Knowledge Bases policy retrieval (replace `StubPolicyStoreAdapter`)
+- [ ] `cost_explorer.py` real impl — boto3 `ce.get_cost_forecast` (replace stub 0.0)
+- [ ] `ApprovalRouter` — real budget + risk scoring after cost data is available
+- [ ] `InternalController.validateTerraform()` — real OPA eval at `http://opa:8181` (replace stub)
+- [ ] `policies/rego/security_baseline.rego` — first real OPA policy
+- [ ] tfsec + checkov in `agent/Dockerfile` — make validation mandatory, not optional
+- [ ] Redis / DynamoDB session checkpointer — replace `MemorySaver()` in `graph.py`
+- [ ] Spring Statemachine — replace manual switch in `WorkflowService`
+
+---
+
+## Phase 6 — Infrastructure & CI/CD ⬜
 
 > Goal: infraforge's own AWS infrastructure as Terraform, GitHub Actions pipelines for infra PRs, OIDC setup, OPA policy enforcement.
 

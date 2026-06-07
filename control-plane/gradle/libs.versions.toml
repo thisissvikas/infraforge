@@ -31,8 +31,7 @@ aws-secretsmanager          = { module = "software.amazon.awssdk:secretsmanager"
 aws-sts                     = { module = "software.amazon.awssdk:sts" }
 
 # Spring Statemachine (Phase 2 — declared early so dependency is pinned)
-spring-statemachine-core    = { module = "org.springframework.statemachine:spring-statemachine-core",
-                                version.ref = "spring-statemachine" }
+spring-statemachine-core    = { module = "org.springframework.statemachine:spring-statemachine-core", version.ref = "spring-statemachine" }
 
 [plugins]
 spring-boot                 = { id = "org.springframework.boot",          version.ref = "spring-boot" }

@@ -38,10 +38,57 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: local
       INFRAFORGE_SERVICE_KEY: local-service-key
+      INFRAFORGE_JWT_SECRET: local-dev-jwt-secret-min-32-chars-xxxx
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-placeholder}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-placeholder}
     depends_on:
       localstack:
+        condition: service_healthy
+      opa:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    profiles:
+      - full
+
+  agent:
+    build:
+      context: ./agent
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      CONTROL_PLANE_URL: http://control-plane:8080
+      INFRAFORGE_SERVICE_KEY: local-service-key
+      USE_FAKE_LLM: "true"
+    depends_on:
+      control-plane:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - full
+
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      CONTROL_PLANE_URL: http://control-plane:8080
+      AGENT_API_URL: http://agent:8000
+      AUTH_SECRET: ${AUTH_SECRET:-local-auth-secret-min-32-chars-xxxx}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-placeholder}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-placeholder}
+    depends_on:
+      agent:
         condition: service_healthy
     profiles:
       - full
