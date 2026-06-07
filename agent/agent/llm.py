@@ -1,3 +1,4 @@
+import itertools
 from langchain_core.language_models import BaseChatModel
 
 
@@ -6,7 +7,8 @@ def get_llm(settings: object) -> BaseChatModel:
         from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
         from langchain_core.messages import AIMessage
 
-        responses = iter([
+        # Cycle through responses indefinitely so the iterator never exhausts
+        responses = itertools.cycle([
             AIMessage(content='{"parsed_intent": {"resource_type": "s3_bucket", "team": "platform", "environment": "dev"}, "intent_confidence": 0.9, "clarification_needed": []}'),
             AIMessage(content='Here is the Terraform:\n```hcl\n# main.tf\nresource "aws_s3_bucket" "main" {\n  bucket = "infraforge-platform-dev"\n}\n```'),
             AIMessage(content='{"validation_passed": true, "validation_errors": []}'),

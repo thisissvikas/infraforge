@@ -1,0 +1,30 @@
+[project]
+name = "infraforge-e2e"
+version = "0.1.0"
+description = "End-to-end tests for the full infraforge stack"
+requires-python = ">=3.13"
+dependencies = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.0",
+    "python-jose[cryptography]>=3.3.0",
+    "rich>=13.0.0",        # coloured output in run_e2e.sh
+]
+
+[build-system]
+requires      = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tests", "utils"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths    = ["tests"]
+markers      = [
+    "e2e: end-to-end tests requiring all services to be running",
+    "health: service health check tests",
+    "workflow: full workflow simulation tests",
+]
+# Show test names + durations; stop after first failure in CI
+addopts = "-v --tb=short"

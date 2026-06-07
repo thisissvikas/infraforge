@@ -1,16 +1,18 @@
 import httpx
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict, alias_generators
 
 
 class PolicyContext(BaseModel):
+    model_config = ConfigDict(alias_generator=alias_generators.to_camel, populate_by_name=True)
     policies: list[str] = []
     approved_modules: list[str] = []
 
 
 class BudgetContext(BaseModel):
-    ceiling_usd: float = 1000.0
-    current_spend_usd: float = 0.0
-    headroom_usd: float = 1000.0
+    model_config = ConfigDict(alias_generator=alias_generators.to_camel, populate_by_name=True)
+    ceiling_usd: float = Field(default=1000.0, alias="ceilingUsd")
+    current_spend_usd: float = Field(default=0.0, alias="currentSpendUsd")
+    headroom_usd: float = Field(default=1000.0, alias="headroomUsd")
 
 
 class ValidationResult(BaseModel):
@@ -19,6 +21,7 @@ class ValidationResult(BaseModel):
 
 
 class SubmitResult(BaseModel):
+    model_config = ConfigDict(alias_generator=alias_generators.to_camel, populate_by_name=True)
     request_id: str
     state: str
 

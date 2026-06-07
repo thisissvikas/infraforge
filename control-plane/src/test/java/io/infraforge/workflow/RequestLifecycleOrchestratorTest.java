@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -34,18 +35,22 @@ class RequestLifecycleOrchestratorTest {
     @Test
     void happyPath_submittedToPrCreated() {
         InfraRequest request = InfraRequest.create("u-1", "u@test.com", "team-1", "create VPC", CloudProvider.AWS);
-        InfraRequest updatedRequest = request.withState(new RequestState.PrCreated("https://github.com/stub/infra/pull/1", "infraforge/" + request.requestId()));
+        String prUrl = "https://github.com/stub/infra/pull/1";
+        String branch = "infraforge/" + request.requestId();
 
         when(stateStore.findById(request.requestId())).thenReturn(Optional.of(request));
-        when(gitHubPrPort.createPr(request)).thenReturn(
-                new GitHubPrPort.GitHubPrResult("https://github.com/stub/infra/pull/1", "infraforge/" + request.requestId()));
-        when(stateStore.transition(eq(request.requestId()), any(RequestState.PrCreated.class))).thenReturn(updatedRequest);
+        when(gitHubPrPort.createPr(request)).thenReturn(new GitHubPrPort.GitHubPrResult(prUrl, branch));
+        doNothing().when(stateStore).update(any(InfraRequest.class));
 
         orchestrator.handleSubmitted(request.requestId());
 
-        verify(stateStore).transition(eq(request.requestId()), any(RequestState.PrCreated.class));
-        verify(auditService).record(eq(updatedRequest), eq("SUBMITTED"), eq("PR_CREATED"), any(String.class));
-        verify(notificationService).prCreated(updatedRequest);
+        verify(stateStore).update(argThat(r ->
+                r.githubPrUrl().equals(prUrl) && r.githubBranch().equals(branch)
+                && r.state() instanceof RequestState.PrCreated));
+        verify(auditService).record(
+                argThat(r -> r.githubPrUrl().equals(prUrl)),
+                eq("SUBMITTED"), eq("PR_CREATED"), any(String.class));
+        verify(notificationService).prCreated(argThat(r -> r.githubPrUrl().equals(prUrl)));
     }
 
     @Test

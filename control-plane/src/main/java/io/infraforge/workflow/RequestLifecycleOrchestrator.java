@@ -1,7 +1,7 @@
 package io.infraforge.workflow;
 
 import io.infraforge.domain.InfraRequest;
-import io.infraforge.domain.RequestState;
+import io.infraforge.domain.RequestState;  // needed for Failed state
 import io.infraforge.ports.GitHubPrPort;
 import io.infraforge.ports.StateStorePort;
 import org.slf4j.Logger;
@@ -45,8 +45,8 @@ public class RequestLifecycleOrchestrator {
         InfraRequest request = maybeRequest.get();
         try {
             GitHubPrPort.GitHubPrResult result = gitHubPrPort.createPr(request);
-            InfraRequest updated = stateStore.transition(requestId,
-                    new RequestState.PrCreated(result.prUrl(), result.branch()));
+            InfraRequest updated = request.withPr(result.prUrl(), result.branch());
+            stateStore.update(updated);
             auditService.record(updated, "SUBMITTED", "PR_CREATED", "PR created: " + result.prUrl());
             notificationService.prCreated(updated);
         } catch (Exception e) {
